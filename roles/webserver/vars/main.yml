@@ -1,0 +1,7 @@
+---
+# vars file for webserver
+webserver_packages:
+  - nginx
+  - git
+  - php
+  - trimage

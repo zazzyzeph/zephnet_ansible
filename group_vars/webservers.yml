@@ -1,6 +1,6 @@
 webserver_static_sites:
   - name: zephnet.biz
-    root: /home/vagrant/hugo
+    root: /home/vagrant/zephnet
     public: /home/vagrant/public
     repository: https://github.com/zazzyzeph/zephnet
 

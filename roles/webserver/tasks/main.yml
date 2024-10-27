@@ -22,17 +22,6 @@
     mode: 0644
   notify: Reload NGINX
 
-# Uncomment below to use file-based deployment instead of git-based deployment
-# Included only as an example
-# - name: Copy site contents
-#   copy:
-#     dest: "{{ item.root }}/"
-#     src: "usr/share/nginx/{{ item.name }}/"
-#     owner: root
-#     group: root
-#     mode: 0755
-#   with_items: "{{ webserver_static_sites }}"
-
 - name: Clone git repositories
   git:
     repo: "{{ item.repository}}"
@@ -51,9 +40,35 @@
   with_items: "{{ webserver_static_sites }}"
   notify: Reload NGINX
 
-- name: Download/Extract Hugo
+- name: Download/Extract Hugo if not exists
   unarchive:
-    src: https://github.com/gohugoio/hugo/releases/download/v0.134.2/hugo_0.134.2_linux-arm64.tar.gz
-    dest: "{{ item.root }}" 
+    src: https://github.com/gohugoio/hugo/releases/download/v0.134.2/hugo_0.134.2_linux-amd64.tar.gz
+    dest: "{{ item.root }}"
+    creates: "{{item.root}}"
     remote_src: true
   with_items: "{{ webserver_static_sites }}"
+  
+- name: Create /etc/ssl/private for the private ssl key
+  become: true
+  ansible.builtin.file:
+    path: /etc/ssl/private
+    state: directory
+    mode: 700
+  
+- name: Create private key (X25519) with password protection
+  become: true
+  community.crypto.openssl_privatekey:
+    path: /etc/ssl/private/selfsigned_private.key
+    type: Ed25519
+    cipher: auto
+    passphrase: changeme
+  
+- name: Create a self signed cert if not exists
+  become: true
+  community.crypto.x509_certificate:
+    path: /etc/ssl/certs/selfsigned.pem
+    privatekey_path: /etc/ssl/certs/selfsigned.key
+    provider: selfsigned
+    privatekey_passphrase: changeme
+    privatekey_path: /etc/ssl/private/selfsigned_private.key
+  

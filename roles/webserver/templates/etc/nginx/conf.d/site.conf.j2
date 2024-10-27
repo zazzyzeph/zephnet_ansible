@@ -1,9 +1,13 @@
 server {
-        listen 80;
-        listen [::]:80;
+        listen 443 http2 ssl;
+        listen [::]:443 http2 ssl;
 
         server_name {{ item.name }};
         root {{ item.public }};
+        
+        ssl_certificate /etc/ssl/certs/selfsigned.pem
+        ssl_certificate_key /etc/ssl/private/selfsigned_private.key
+
         index index.html
         server_tokens off;
         charset utf-8;
